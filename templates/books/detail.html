@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}
+    detail
+{% endblock %}
+
+{% block main %}
+    <h1>📚 Book Detail page</h1>
+
+    <div class="books">
+        <div class="book-card">
+            <h2>{{ book.title }}</h2>
+            <p>{{ book.description }}</p>
+            <p>{{ book.created_time }}</p>
+            <p>{{ book.updated_time }}</p>
+            <a href="{% url 'book_list' %}">
+                <button>orqaga</button>
+            </a>
+        </div>
+    </div>
+
+{% endblock %}
+

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    book list
+{% endblock %}
+
+{% block main %}
+
+    <h1>📚 Book List page</h1>
+
+    <div class="books">
+        {% for book in books %}
+            <div class="book-card">
+                <h2>{{ book.title }}</h2>
+                <p>{{ book.description }}</p>
+                <p>{{ book.created_time }}</p>
+                <a href="{% url 'book_detail' book.id %}">
+                    <button>detail</button>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
