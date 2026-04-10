@@ -1,5 +1,7 @@
 from django.db import models
 
+from common.models import BaseModel, DeletedModel
+
 
 class BookType(models.TextChoices):
     STANDARD = 'standard'
@@ -7,7 +9,7 @@ class BookType(models.TextChoices):
     ILMIY = 'ilmiy'
 
 
-class Author(models.Model):
+class Author(BaseModel, DeletedModel):
     first_name = models.CharField(max_length=20, null=True, blank=True)
     last_name = models.CharField(max_length=20)
     birth_date = models.DateField()
@@ -21,14 +23,12 @@ class Author(models.Model):
 
 
 # id -> primary key-serial,title->varchar(255),description->text,author-varchar,type-> varchar
-class Books(models.Model):
+class Books(BaseModel, DeletedModel):
     title = models.CharField(max_length=255)
     description = models.TextField()
     authors = models.ManyToManyField(Author, related_name='books')
     price = models.DecimalField(max_digits=10, decimal_places=2)
     type = models.CharField(max_length=20, choices=BookType.choices, default=BookType.STANDARD)
-    created_time = models.DateTimeField(auto_now_add=True)
-    updated_time = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f'{self.title}'
@@ -36,6 +36,7 @@ class Books(models.Model):
     class Meta:
         db_table = 'books'
         ordering = ['-created_time']
+
 
 # CRUD -> INSERT,SELECT,UPDATE,DELETE
 

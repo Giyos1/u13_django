@@ -1,13 +1,20 @@
-from django.http import HttpResponse
+from django.core.paginator import Paginator
+from django.db.models import Q
 from django.shortcuts import render, redirect
 
-from books.forms import BooksForm, BookModelForm
+from books.forms import BookModelForm
 from books.models import Books
 
 
 def book_list(request):
+    search = request.GET.get('search','')
+    page = request.GET.get('page')
     books = Books.objects.all()  # Queryset list [<booq1>.
-    return render(request, 'books/list.html', {"books": books})
+    if search:
+        books = books.filter(Q(title__icontains=search) | Q(description__icontains=search))
+    paginator = Paginator(books, 3)
+    books = paginator.get_page(page)
+    return render(request, 'books/list.html', {"books": books, 'search': search})
 
 
 def book_detail(request, pk):
