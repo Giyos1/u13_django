@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block main %}
+
+    <form action="{% url 'product_create_save' %}" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button>saqlash</button>
+
+
+    </form>
+
+{% endblock %}
