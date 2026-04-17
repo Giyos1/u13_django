@@ -19,6 +19,7 @@ from django.contrib import admin
 from django.shortcuts import render
 from django.urls import path, include
 
+
 def home(request):
     # print(request.META)
     # DB ga boglanib malumot olsak boladi  -M model
@@ -30,8 +31,8 @@ def home(request):
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('book/',include('books.urls')),
-    path('product/',include('product.urls')),
-    path('accounts/',include('accounts.urls')),
+    path('book/', include('books.urls')),
+    path('product/', include('product.urls')),
+    path('accounts/', include('accounts.urls')),
     path('', home),
 ]

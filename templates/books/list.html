@@ -7,9 +7,12 @@
 {% block main %}
 
     <h1>📚 Book List page</h1>
-    <a href="{% url 'book_create_form' %}">
-        <button class="btn btn-primary">create</button>
-    </a>
+    {% if request.user.is_authenticated %}
+
+        <a href="{% url 'book_create_form' %}">
+            <button class="btn btn-primary">create</button>
+        </a>
+    {% endif %}
     <div class="books">
         {% for book in books %}
             <div class="book-card">
@@ -19,12 +22,15 @@
                 <a href="{% url 'book_detail' book.id %}">
                     <button class="btn btn-primary">detail</button>
                 </a>
-                <a href="{% url 'book_update_form' book.id %}">
-                    <button class="btn btn-warning">update</button>
-                </a>
-                <a href="{% url 'book_delete' book.id %}">
-                    <button class="btn btn-danger">delete</button>
-                </a>
+
+                {% if request.user.is_authenticated %}
+                    <a href="{% url 'book_update_form' book.id %}">
+                        <button class="btn btn-warning">update</button>
+                    </a>
+                    <a href="{% url 'book_delete' book.id %}">
+                        <button class="btn btn-danger">delete</button>
+                    </a>
+                {% endif %}
 
             </div>
         {% endfor %}
