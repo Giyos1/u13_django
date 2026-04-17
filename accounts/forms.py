@@ -42,3 +42,9 @@ class LoginForm(forms.Form):
             raise forms.ValidationError("User not found")
 
         return {'user': user}
+
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name', 'email', 'username')
