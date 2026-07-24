@@ -11,3 +11,4 @@ cryptography==48.0.0
 requests
 pyotp==2.9.0
 django-rosetta==0.10.3
+gunicorn==26.0.0
