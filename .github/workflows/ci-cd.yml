@@ -27,4 +27,14 @@ jobs:
           pip install -r requirements.txt
 
       - name: Test qilish
+        env:
+          SECRET_KEY: "test-secret-key-faqat-ci-uchun"
+          DEBUG: "False"
+          POSTGRES_DB: test_db
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_pass
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          GOOGLE_CLIENT_ID: "test-client-id"
+          GOOGLE_CLIENT_SECRET: "test-client-secret"
         run: python manage.py test   # oddiy terminal buyrug'i
