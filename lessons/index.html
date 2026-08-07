@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CI/CD — Interaktiv Dars</title>
+<style>
+  :root{
+    --bg:#0a0e1a; --bg2:#0f1525; --card:#141b2e; --card2:#1a2238;
+    --line:#23304d; --txt:#e8edf7; --muted:#8b97b3;
+    --ci:#3b82f6; --cd:#22c55e; --accent:#a855f7;
+    --amber:#f59e0b; --red:#ef4444;
+    --grad:linear-gradient(135deg,#3b82f6,#a855f7 50%,#22c55e);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    background:var(--bg); color:var(--txt); line-height:1.65; overflow-x:hidden;
+  }
+  ::selection{background:var(--accent);color:#fff}
+
+  /* ---- background glow ---- */
+  .glow{position:fixed;border-radius:50%;filter:blur(120px);opacity:.18;z-index:0;pointer-events:none}
+  .glow.a{width:500px;height:500px;background:var(--ci);top:-100px;left:-100px}
+  .glow.b{width:600px;height:600px;background:var(--accent);top:40%;right:-200px}
+  .glow.c{width:500px;height:500px;background:var(--cd);bottom:-150px;left:30%}
+
+  .wrap{max-width:1100px;margin:0 auto;padding:0 24px;position:relative;z-index:1}
+  section{padding:90px 0}
+
+  /* ---- nav ---- */
+  nav{position:sticky;top:0;z-index:100;backdrop-filter:blur(14px);
+    background:rgba(10,14,26,.7);border-bottom:1px solid var(--line)}
+  .nav-in{max-width:1100px;margin:0 auto;padding:14px 24px;display:flex;
+    align-items:center;justify-content:space-between}
+  .logo{font-weight:800;font-size:20px;display:flex;align-items:center;gap:8px}
+  .logo .dot{width:10px;height:10px;border-radius:50%;background:var(--grad);
+    box-shadow:0 0 14px var(--accent)}
+  .nav-links{display:flex;gap:6px}
+  .nav-links a{color:var(--muted);text-decoration:none;font-size:14px;font-weight:600;
+    padding:8px 14px;border-radius:10px;transition:.2s}
+  .nav-links a:hover{color:var(--txt);background:var(--card2)}
+  @media(max-width:720px){.nav-links{display:none}}
+
+  /* ---- hero ---- */
+  .hero{text-align:center;padding:110px 0 80px}
+  .badge{display:inline-flex;align-items:center;gap:8px;background:var(--card);
+    border:1px solid var(--line);padding:8px 16px;border-radius:100px;
+    font-size:13px;color:var(--muted);font-weight:600;margin-bottom:28px}
+  .badge .pulse{width:8px;height:8px;border-radius:50%;background:var(--cd);
+    box-shadow:0 0 0 0 var(--cd);animation:pulse 2s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.6)}70%{box-shadow:0 0 0 10px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+  .hero h1{font-size:clamp(40px,8vw,76px);font-weight:900;line-height:1.05;
+    letter-spacing:-2px;margin-bottom:24px}
+  .hero h1 .g{background:var(--grad);-webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent}
+  .hero p{font-size:clamp(16px,2.5vw,21px);color:var(--muted);max-width:620px;
+    margin:0 auto 40px}
+  .btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+  .btn{padding:15px 32px;border-radius:14px;font-weight:700;font-size:16px;
+    text-decoration:none;cursor:pointer;border:none;transition:.25s;display:inline-flex;
+    align-items:center;gap:8px}
+  .btn-p{background:var(--grad);color:#fff;background-size:200%}
+  .btn-p:hover{background-position:right;transform:translateY(-3px);
+    box-shadow:0 12px 32px rgba(168,85,247,.4)}
+  .btn-s{background:var(--card);color:var(--txt);border:1px solid var(--line)}
+  .btn-s:hover{background:var(--card2);transform:translateY(-3px)}
+
+  /* ---- section headers ---- */
+  .sec-tag{color:var(--accent);font-weight:700;font-size:14px;letter-spacing:1px;
+    text-transform:uppercase;margin-bottom:12px;text-align:center}
+  .sec-title{font-size:clamp(28px,5vw,44px);font-weight:850;text-align:center;
+    letter-spacing:-1px;margin-bottom:16px}
+  .sec-sub{color:var(--muted);text-align:center;max-width:600px;margin:0 auto 56px;font-size:17px}
+
+  /* ---- reveal anim ---- */
+  .reveal{opacity:0;transform:translateY(40px);transition:.7s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+
+  /* ---- analogy cards ---- */
+  .grid{display:grid;gap:20px}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:720px){.g2,.g3{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:20px;
+    padding:28px;transition:.3s}
+  .card:hover{border-color:var(--accent);transform:translateY(-4px);
+    box-shadow:0 16px 40px rgba(0,0,0,.4)}
+  .card .ic{font-size:34px;margin-bottom:14px}
+  .card h3{font-size:20px;margin-bottom:8px}
+  .card p{color:var(--muted);font-size:15px}
+
+  /* ---- CI vs CD ---- */
+  .vs{display:grid;grid-template-columns:1fr auto 1fr;gap:24px;align-items:stretch}
+  @media(max-width:720px){.vs{grid-template-columns:1fr}.vs .vsmid{display:none}}
+  .vs-card{border-radius:20px;padding:32px;border:1px solid var(--line);background:var(--card)}
+  .vs-card.ci{border-color:rgba(59,130,246,.4);box-shadow:0 0 40px rgba(59,130,246,.08) inset}
+  .vs-card.cd{border-color:rgba(34,197,94,.4);box-shadow:0 0 40px rgba(34,197,94,.08) inset}
+  .vs-card h3{font-size:26px;margin-bottom:6px}
+  .vs-card.ci h3{color:var(--ci)}.vs-card.cd h3{color:var(--cd)}
+  .vs-card .lbl{font-size:13px;color:var(--muted);margin-bottom:20px;font-weight:600}
+  .vs-card ul{list-style:none}
+  .vs-card li{padding:10px 0;border-bottom:1px solid var(--line);font-size:15px;
+    display:flex;gap:10px;align-items:flex-start}
+  .vs-card li:last-child{border:none}
+  .vs-card li::before{content:"✓";font-weight:800}
+  .vs-card.ci li::before{color:var(--ci)}.vs-card.cd li::before{color:var(--cd)}
+  .vsmid{display:flex;align-items:center;font-weight:900;font-size:24px;color:var(--muted)}
+
+  /* ---- interactive pipeline ---- */
+  .pipe{background:var(--card);border:1px solid var(--line);border-radius:24px;
+    padding:36px;margin-top:10px}
+  .pipe-track{display:flex;gap:0;align-items:stretch;flex-wrap:wrap;justify-content:center}
+  .stage{flex:1;min-width:120px;text-align:center;position:relative;cursor:pointer;
+    padding:8px}
+  .stage .node{width:64px;height:64px;border-radius:18px;background:var(--card2);
+    border:2px solid var(--line);display:flex;align-items:center;justify-content:center;
+    font-size:28px;margin:0 auto 12px;transition:.35s;position:relative;z-index:2}
+  .stage .nm{font-size:13px;font-weight:700;color:var(--muted);transition:.3s}
+  .stage::after{content:"";position:absolute;top:40px;left:60%;width:80%;height:2px;
+    background:var(--line);z-index:1}
+  .stage:last-child::after{display:none}
+  @media(max-width:720px){.stage::after{display:none}}
+  .stage.active .node{border-color:var(--accent);background:var(--accent);
+    transform:scale(1.12);box-shadow:0 0 30px rgba(168,85,247,.6)}
+  .stage.active .nm{color:var(--txt)}
+  .stage.done .node{border-color:var(--cd);color:var(--cd)}
+  .stage.fail .node{border-color:var(--red);background:var(--red);
+    box-shadow:0 0 30px rgba(239,68,68,.6)}
+  .pipe-info{margin-top:28px;background:var(--bg2);border:1px solid var(--line);
+    border-radius:16px;padding:24px;min-height:120px}
+  .pipe-info h4{font-size:18px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+  .pipe-info p{color:var(--muted);font-size:15px}
+  .pipe-info .term{margin-top:14px;background:#070b14;border:1px solid var(--line);
+    border-radius:10px;padding:12px 16px;font-family:'SF Mono',Menlo,monospace;
+    font-size:13px;color:#7dd3fc}
+  .pipe-ctrl{display:flex;gap:12px;justify-content:center;margin-top:26px;flex-wrap:wrap}
+
+  /* ---- code block ---- */
+  .codewrap{background:#070b14;border:1px solid var(--line);border-radius:18px;
+    overflow:hidden;margin-top:10px}
+  .code-bar{background:var(--card2);padding:12px 18px;display:flex;align-items:center;
+    gap:8px;border-bottom:1px solid var(--line)}
+  .code-bar .d{width:12px;height:12px;border-radius:50%}
+  .code-bar .d.r{background:#ff5f57}.code-bar .d.y{background:#febc2e}.code-bar .d.g{background:#28c840}
+  .code-bar .fn{margin-left:12px;color:var(--muted);font-size:13px;
+    font-family:'SF Mono',Menlo,monospace}
+  pre{padding:24px;overflow-x:auto;font-family:'SF Mono',Menlo,Consolas,monospace;
+    font-size:13.5px;line-height:1.7}
+  .k{color:#c792ea}.s{color:#c3e88d}.c{color:#546e7a;font-style:italic}
+  .v{color:#82aaff}.p{color:#ffcb6b}
+
+  /* ---- quiz ---- */
+  .quiz{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:36px}
+  .quiz .q{font-size:20px;font-weight:700;margin-bottom:24px}
+  .quiz .qnum{color:var(--accent);font-size:14px;font-weight:700;margin-bottom:8px}
+  .opt{display:block;width:100%;text-align:left;background:var(--bg2);
+    border:1px solid var(--line);color:var(--txt);padding:16px 20px;border-radius:14px;
+    margin-bottom:12px;cursor:pointer;font-size:15px;font-weight:600;transition:.2s;
+    font-family:inherit}
+  .opt:hover{border-color:var(--accent);background:var(--card2)}
+  .opt.correct{border-color:var(--cd);background:rgba(34,197,94,.12);color:var(--cd)}
+  .opt.wrong{border-color:var(--red);background:rgba(239,68,68,.12);color:var(--red)}
+  .opt:disabled{cursor:default}
+  .quiz-feed{margin-top:18px;font-size:15px;font-weight:600;min-height:24px}
+  .quiz-bar{height:6px;background:var(--bg2);border-radius:100px;margin-bottom:28px;overflow:hidden}
+  .quiz-bar i{display:block;height:100%;background:var(--grad);width:0;transition:.5s;border-radius:100px}
+
+  /* ---- steps to setup ---- */
+  .steps{counter-reset:s}
+  .step{display:flex;gap:20px;padding:22px 0;border-bottom:1px solid var(--line)}
+  .step:last-child{border:none}
+  .step .n{counter-increment:s;flex-shrink:0;width:44px;height:44px;border-radius:12px;
+    background:var(--grad);display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:18px}
+  .step .n::before{content:counter(s)}
+  .step h4{font-size:18px;margin-bottom:4px}
+  .step p{color:var(--muted);font-size:15px}
+  .step code{background:var(--card2);padding:2px 8px;border-radius:6px;
+    font-family:monospace;font-size:13px;color:var(--p,#ffcb6b)}
+
+  /* ---- deploy flow ---- */
+  .dep-flow{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap}
+  .dep-node{background:var(--card);border:2px solid var(--line);border-radius:18px;
+    padding:22px 26px;text-align:center;min-width:150px;transition:.4s}
+  .dep-node.lit{border-color:var(--accent);box-shadow:0 0 36px rgba(168,85,247,.4);
+    transform:translateY(-6px)}
+  .dep-node.ok{border-color:var(--cd);box-shadow:0 0 36px rgba(34,197,94,.3)}
+  .dep-ic{font-size:38px;margin-bottom:8px}
+  .dep-t{font-weight:800;font-size:16px}
+  .dep-s{color:var(--muted);font-size:13px;margin-top:2px}
+  .dep-arrow{position:relative;width:120px;height:60px;display:flex;align-items:center;
+    justify-content:center}
+  @media(max-width:720px){.dep-arrow{width:60px;transform:rotate(90deg)}}
+  .dep-arrow::before{content:"";position:absolute;left:8px;right:8px;top:50%;height:2px;
+    background:var(--line)}
+  .dep-arrow.lit::before{background:var(--accent);box-shadow:0 0 10px var(--accent)}
+  .dep-lbl{position:absolute;top:-2px;font-size:11px;font-weight:700;color:var(--muted);
+    background:var(--bg);padding:0 6px;white-space:nowrap;opacity:0;transition:.3s}
+  .dep-arrow.lit .dep-lbl{opacity:1;color:var(--accent)}
+  .dep-pkt{position:absolute;width:12px;height:12px;border-radius:50%;background:var(--accent);
+    box-shadow:0 0 14px var(--accent);left:8px;top:50%;margin-top:-6px;opacity:0}
+  .dep-arrow.run .dep-pkt{animation:fly 1s ease-in-out forwards}
+  @keyframes fly{0%{opacity:1;left:8px}100%{opacity:1;left:calc(100% - 20px)}}
+
+  /* ---- secrets checklist ---- */
+  .sec-list{display:flex;flex-direction:column;gap:10px}
+  .sec-item{display:flex;align-items:center;gap:12px;background:var(--bg2);
+    border:1px solid var(--line);border-radius:12px;padding:13px 16px;cursor:pointer;
+    transition:.2s;font-size:14px}
+  .sec-item:hover{border-color:var(--accent)}
+  .sec-item code{font-family:'SF Mono',Menlo,monospace;color:#ffcb6b;font-size:13px}
+  .sec-item .sec-d{margin-left:auto;color:var(--muted);font-size:12px}
+  .sec-item .chk{width:22px;height:22px;border-radius:7px;border:2px solid var(--line);
+    flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:.2s;
+    font-size:13px;font-weight:800}
+  .sec-item.done{border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.07)}
+  .sec-item.done .chk{background:var(--cd);border-color:var(--cd);color:#06210f}
+  .sec-item.done .chk::after{content:"✓"}
+  .sec-item.done code{color:var(--cd)}
+  .sec-prog{margin-top:16px;text-align:center;font-weight:700;font-size:14px;color:var(--muted)}
+
+  footer{text-align:center;padding:60px 24px;border-top:1px solid var(--line);
+    color:var(--muted);font-size:14px}
+  footer .big{font-size:26px;font-weight:800;color:var(--txt);margin-bottom:10px}
+
+  .stat-row{display:flex;gap:40px;justify-content:center;flex-wrap:wrap;margin-top:50px}
+  .stat{text-align:center}
+  .stat .num{font-size:42px;font-weight:900;background:var(--grad);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .stat .cap{color:var(--muted);font-size:14px;font-weight:600}
+</style>
+</head>
+<body>
+<div class="glow a"></div><div class="glow b"></div><div class="glow c"></div>
+
+<nav>
+  <div class="nav-in">
+    <div class="logo"><span class="dot"></span> CI/CD Dars</div>
+    <div class="nav-links">
+      <a href="#what">Nima u?</a>
+      <a href="#vs">CI vs CD</a>
+      <a href="#pipeline">Pipeline</a>
+      <a href="#code">Kod</a>
+      <a href="#deploy">Deploy</a>
+      <a href="#quiz">Test</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero wrap">
+  <div class="badge"><span class="pulse"></span> Interaktiv dars · GitHub Actions</div>
+  <h1>Kodni qo'lda emas,<br><span class="g">avtomatik</span> joylashtir</h1>
+  <p>CI/CD nima, nega kerak va GitHub Actions bilan o'z loyihangizga qanday o'rnatish kerak — bosqichma-bosqich, jonli misollar bilan.</p>
+  <div class="btns">
+    <a href="#what" class="btn btn-p">🚀 Boshlash</a>
+    <a href="#pipeline" class="btn btn-s">▶️ Pipeline'ni ko'rish</a>
+  </div>
+  <div class="stat-row">
+    <div class="stat"><div class="num">2</div><div class="cap">harf: CI + CD</div></div>
+    <div class="stat"><div class="num">0</div><div class="cap">qo'lda deploy</div></div>
+    <div class="stat"><div class="num">∞</div><div class="cap">tekin (public repo)</div></div>
+  </div>
+</header>
+
+<!-- WHAT -->
+<section id="what" class="wrap">
+  <div class="reveal">
+    <div class="sec-tag">Asoslar</div>
+    <h2 class="sec-title">CI/CD aslida nima?</h2>
+    <p class="sec-sub">Oddiy qilib aytganda — bu sizning <b>robot yordamchingiz</b>. Siz kod yozasiz, u tekshiradi, test qiladi va serverga o'zi joylashtiradi.</p>
+  </div>
+  <div class="grid g3">
+    <div class="card reveal"><div class="ic">😫</div><h3>Muammo</h3><p>Qo'lda deploy — uzoq, charchatadi va xatoga moyil. "Mening kompda ishlayapti-ku!" deган gap.</p></div>
+    <div class="card reveal"><div class="ic">🤖</div><h3>Yechim</h3><p>Robot har <code>git push</code>da avtomatik test qiladi va sog'lom kodni serverga chiqaradi.</p></div>
+    <div class="card reveal"><div class="ic">😎</div><h3>Natija</h3><p>Tez, ishonchli, xatosiz. Siz faqat kod yozasiz — qolganini avtomatika hal qiladi.</p></div>
+  </div>
+</section>
+
+<!-- CI vs CD -->
+<section id="vs" class="wrap">
+  <div class="reveal">
+    <div class="sec-tag">Farqi</div>
+    <h2 class="sec-title">CI 🔵 va CD 🟢</h2>
+    <p class="sec-sub">Ikkalasi alohida tushuncha, lekin doim birga ishlaydi. Biri tekshiradi, ikkinchisi yetkazadi.</p>
+  </div>
+  <div class="vs reveal">
+    <div class="vs-card ci">
+      <h3>CI</h3>
+      <div class="lbl">Continuous Integration · Uzluksiz integratsiya</div>
+      <ul>
+        <li>Kodni avtomatik tekshiradi</li>
+        <li>Testlarni ishga tushiradi</li>
+        <li>Xatolarni <b>erta</b> topadi</li>
+        <li>Savol: "Kod sog'lommi?"</li>
+      </ul>
+    </div>
+    <div class="vsmid">+</div>
+    <div class="vs-card cd">
+      <h3>CD</h3>
+      <div class="lbl">Continuous Delivery / Deployment</div>
+      <ul>
+        <li>Docker image build qiladi</li>
+        <li>Docker Hub'ga push qiladi</li>
+        <li>Serverga <b>avtomatik</b> chiqaradi</li>
+        <li>Natija: "Kod serverda!"</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- PIPELINE -->
+<section id="pipeline" class="wrap">
+  <div class="reveal">
+    <div class="sec-tag">Jonli demo</div>
+    <h2 class="sec-title">Pipeline'ni ishlatib ko'r</h2>
+    <p class="sec-sub">"▶️ Ishga tushir" tugmasini bos va kod bosqichlardan qanday o'tishini kuzat. Har bir bosqichni bosib, batafsil o'qishing ham mumkin.</p>
+  </div>
+  <div class="pipe reveal">
+    <div class="pipe-track" id="track">
+      <div class="stage" data-i="0"><div class="node">📥</div><div class="nm">Checkout</div></div>
+      <div class="stage" data-i="1"><div class="node">📦</div><div class="nm">Install</div></div>
+      <div class="stage" data-i="2"><div class="node">🧪</div><div class="nm">Test</div></div>
+      <div class="stage" data-i="3"><div class="node">🏗️</div><div class="nm">Build</div></div>
+      <div class="stage" data-i="4"><div class="node">🚀</div><div class="nm">Push</div></div>
+      <div class="stage" data-i="5"><div class="node">🌐</div><div class="nm">Deploy</div></div>
+    </div>
+    <div class="pipe-info" id="info">
+      <h4>👆 Bosqichni tanlang yoki pipeline'ni ishga tushiring</h4>
+      <p>Har bir bosqich oldingisiga bog'liq. Agar test yiqilsa — build va deploy <b>ishlamaydi</b>. Aynan shu bizni buzuq kodni serverga chiqarishdan saqlaydi.</p>
+    </div>
+    <div class="pipe-ctrl">
+      <button class="btn btn-p" id="run">▶️ Ishga tushir</button>
+      <button class="btn btn-s" id="fail">💥 Test yiqilsa-chi?</button>
+      <button class="btn btn-s" id="reset">↺ Qaytadan</button>
+    </div>
+  </div>
+</section>
+
+<!-- CODE -->
+<section id="code" class="wrap">
+  <div class="reveal">
+    <div class="sec-tag">Amaliyot</div>
+    <h2 class="sec-title">Haqiqiy workflow fayl</h2>
+    <p class="sec-sub">Mana shu fayl <code style="color:#ffcb6b">.github/workflows/ci-cd.yml</code> ichida turadi. Har bir qatorni izoh bilan ko'rsatdik.</p>
+  </div>
+  <div class="codewrap reveal">
+    <div class="code-bar">
+      <span class="d r"></span><span class="d y"></span><span class="d g"></span>
+      <span class="fn">.github/workflows/ci-cd.yml</span>
+    </div>
+<pre><span class="c"># Workflow nomi</span>
+<span class="k">name</span>: CI/CD Pipeline
+
+<span class="c"># QACHON ishga tushadi?</span>
+<span class="k">on</span>:
+  <span class="k">push</span>:
+    <span class="k">branches</span>: [ <span class="s">"main"</span> ]   <span class="c"># main'ga push bo'lganda</span>
+
+<span class="k">jobs</span>:
+  <span class="c"># 1-JOB: TEST (CI qismi)</span>
+  <span class="k">test</span>:
+    <span class="k">runs-on</span>: <span class="v">ubuntu-latest</span>
+    <span class="k">steps</span>:
+      - <span class="k">uses</span>: <span class="v">actions/checkout@v4</span>          <span class="c"># kodni ol</span>
+      - <span class="k">uses</span>: <span class="v">actions/setup-python@v5</span>      <span class="c"># python o'rnat</span>
+      - <span class="k">run</span>: <span class="s">pip install -r requirements.txt</span>
+      - <span class="k">run</span>: <span class="s">python manage.py test</span>         <span class="c"># TEST!</span>
+
+  <span class="c"># 2-JOB: BUILD &amp; PUSH (CD qismi)</span>
+  <span class="k">build-and-push</span>:
+    <span class="k">needs</span>: <span class="v">test</span>                          <span class="c"># ← test o'tsagina!</span>
+    <span class="k">runs-on</span>: <span class="v">ubuntu-latest</span>
+    <span class="k">steps</span>:
+      - <span class="k">uses</span>: <span class="v">docker/login-action@v3</span>       <span class="c"># Docker Hub login</span>
+        <span class="k">with</span>:
+          <span class="k">username</span>: <span class="p">${{ secrets.DOCKERHUB_USERNAME }}</span>
+          <span class="k">password</span>: <span class="p">${{ secrets.DOCKERHUB_TOKEN }}</span>
+      - <span class="k">uses</span>: <span class="v">docker/build-push-action@v6</span>  <span class="c"># build + push</span>
+        <span class="k">with</span>:
+          <span class="k">push</span>: <span class="v">true</span>
+          <span class="k">tags</span>: <span class="s">giyos1/u11_django:latest</span></pre>
+  </div>
+</section>
+
+<!-- SETUP STEPS -->
+<section class="wrap">
+  <div class="reveal">
+    <div class="sec-tag">3 qadam</div>
+    <h2 class="sec-title">O'z loyihangizga o'rnatish</h2>
+  </div>
+  <div class="card reveal steps">
+    <div class="step"><div class="n"></div><div><h4>Faylni yarating</h4><p>Loyihada <code>.github/workflows/ci-cd.yml</code> faylini oching va workflow kodini joylashtiring.</p></div></div>
+    <div class="step"><div class="n"></div><div><h4>Secrets qo'shing</h4><p>GitHub repo → <code>Settings → Secrets → Actions</code>. <code>DOCKERHUB_USERNAME</code> va <code>DOCKERHUB_TOKEN</code> qo'shing.</p></div></div>
+    <div class="step"><div class="n"></div><div><h4>Push qiling</h4><p><code>git push</code> qiling va GitHub'da <code>Actions</code> tabidan robotning ishlashini real vaqtda kuzating. Tamom! 🎉</p></div></div>
+  </div>
+</section>
+
+<!-- DEPLOY -->
+<section id="deploy" class="wrap">
+  <div class="reveal">
+    <div class="sec-tag">Eng oxirgi bosqich</div>
+    <h2 class="sec-title">Serverga avtomatik deploy 🌐</h2>
+    <p class="sec-sub">Image Docker Hub'da tayyor. Endi GitHub serverga <b>SSH orqali</b> kirib, yangi versiyani ishga tushiradi — qo'l tegmaydi.</p>
+  </div>
+
+  <!-- animated flow -->
+  <div class="dep-flow reveal">
+    <div class="dep-node" id="dn0">
+      <div class="dep-ic">⚙️</div>
+      <div class="dep-t">GitHub Actions</div>
+      <div class="dep-s">image push qilindi</div>
+    </div>
+    <div class="dep-arrow" id="da0">
+      <span class="dep-pkt"></span>
+      <div class="dep-lbl">🔑 SSH ulanish</div>
+    </div>
+    <div class="dep-node" id="dn1">
+      <div class="dep-ic">🖥️</div>
+      <div class="dep-t">Sizning Server</div>
+      <div class="dep-s">pull &amp; restart</div>
+    </div>
+    <div class="dep-arrow" id="da1">
+      <span class="dep-pkt"></span>
+      <div class="dep-lbl">🚀 ishga tushdi</div>
+    </div>
+    <div class="dep-node" id="dn2">
+      <div class="dep-ic">🌍</div>
+      <div class="dep-t">Tirik sayt</div>
+      <div class="dep-s">yangilandi!</div>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:24px" class="reveal">
+    <button class="btn btn-p" id="depRun">▶️ Deploy'ni ko'rsat</button>
+  </div>
+
+  <!-- two columns: secrets checklist + terminal -->
+  <div class="grid g2 reveal" style="margin-top:50px">
+    <div class="card">
+      <h3 style="margin-bottom:6px">🔐 Kerakli Secrets</h3>
+      <p style="color:var(--muted);font-size:14px;margin-bottom:18px">GitHub → Settings → Secrets → Actions. Bosib belgilang 👇</p>
+      <div class="sec-list" id="secList">
+        <div class="sec-item"><span class="chk"></span><code>DOCKERHUB_USERNAME</code><span class="sec-d">Docker Hub login</span></div>
+        <div class="sec-item"><span class="chk"></span><code>DOCKERHUB_TOKEN</code><span class="sec-d">Access token</span></div>
+        <div class="sec-item"><span class="chk"></span><code>SERVER_HOST</code><span class="sec-d">server IP</span></div>
+        <div class="sec-item"><span class="chk"></span><code>SERVER_USER</code><span class="sec-d">root / ubuntu</span></div>
+        <div class="sec-item"><span class="chk"></span><code>SERVER_SSH_KEY</code><span class="sec-d">private key</span></div>
+      </div>
+      <div class="sec-prog" id="secProg">0 / 5 belgilandi</div>
+    </div>
+
+    <div class="codewrap" style="margin-top:0">
+      <div class="code-bar">
+        <span class="d r"></span><span class="d y"></span><span class="d g"></span>
+        <span class="fn">deploy job — script</span>
+      </div>
+<pre><span class="k">deploy</span>:
+  <span class="k">needs</span>: <span class="v">build-and-push</span>      <span class="c"># image tayyor bo'lsa</span>
+  <span class="k">steps</span>:
+    - <span class="k">uses</span>: <span class="v">appleboy/ssh-action@v1</span>
+      <span class="k">with</span>:
+        <span class="k">host</span>: <span class="p">${{ secrets.SERVER_HOST }}</span>
+        <span class="k">username</span>: <span class="p">${{ secrets.SERVER_USER }}</span>
+        <span class="k">key</span>: <span class="p">${{ secrets.SERVER_SSH_KEY }}</span>
+        <span class="k">script</span>: |
+          <span class="s">cd ~/u11_django</span>
+          <span class="s">docker compose pull</span>   <span class="c"># yangi image</span>
+          <span class="s">docker compose up -d</span>  <span class="c"># qayta ishga tushir</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz" class="wrap">
+  <div class="reveal">
+    <div class="sec-tag">O'zingizni sinang</div>
+    <h2 class="sec-title">Mini-test</h2>
+    <p class="sec-sub">3 ta savol. Bilimingizni mustahkamlang!</p>
+  </div>
+  <div class="quiz reveal">
+    <div class="quiz-bar"><i id="qbar"></i></div>
+    <div class="qnum" id="qnum">Savol 1 / 3</div>
+    <div class="q" id="qtext"></div>
+    <div id="qopts"></div>
+    <div class="quiz-feed" id="qfeed"></div>
+    <div style="margin-top:20px"><button class="btn btn-p" id="qnext" style="display:none">Keyingi →</button></div>
+  </div>
+</section>
+
+<footer>
+  <div class="big">🎓 Darsni tugatdingiz!</div>
+  <p>CI/CD endi siz uchun sir emas. Endi o'z loyihangizga o'rnating va sinab ko'ring.</p>
+  <p style="margin-top:14px;opacity:.6">Tayyorladi: Giyos · O'quvchilar uchun interaktiv dars</p>
+</footer>
+
+<script>
+/* ---------- scroll reveal ---------- */
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in')}),{threshold:.12});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+/* ---------- pipeline ---------- */
+const stages=[...document.querySelectorAll('.stage')];
+const info=document.getElementById('info');
+const data=[
+  {t:"📥 Checkout",d:"GitHub kodingizni runner (vaqtinchalik kompyuter)ga yuklab oladi. Hammasi shu yerdan boshlanadi.",c:"$ git clone repo && cd repo"},
+  {t:"📦 Install",d:"Kerakli kutubxonalar o'rnatiladi. Django loyihasida bu requirements.txt fayli.",c:"$ pip install -r requirements.txt"},
+  {t:"🧪 Test",d:"Eng muhim bosqich! Testlar ishga tushadi. Bittasi yiqilsa — pipeline shu yerda to'xtaydi.",c:"$ python manage.py test"},
+  {t:"🏗️ Build",d:"Test o'tdi! Endi Dockerfile asosida Docker image yasaladi — ilovaning tayyor 'qutisi'.",c:"$ docker build -t u11_django ."},
+  {t:"🚀 Push",d:"Tayyor image Docker Hub'ga yuklanadi, toki uni istalgan serverdan tortib olish mumkin bo'lsin.",c:"$ docker push giyos1/u11_django"},
+  {t:"🌐 Deploy",d:"Server yangi image'ni tortib oladi va ishga tushiradi. Saytingiz yangilandi — qo'l tegmadi!",c:"$ docker compose up -d"},
+];
+function show(i){
+  stages.forEach(s=>s.classList.remove('active'));
+  stages[i].classList.add('active');
+  info.innerHTML=`<h4>${data[i].t}</h4><p>${data[i].d}</p><div class="term">${data[i].c}</div>`;
+}
+stages.forEach(s=>s.addEventListener('click',()=>show(+s.dataset.i)));
+
+let running=false;
+function clearAll(){stages.forEach(s=>s.classList.remove('active','done','fail'));}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+async function play(failAt=-1){
+  if(running)return; running=true; clearAll();
+  for(let i=0;i<stages.length;i++){
+    show(i); await sleep(750);
+    if(i===failAt){
+      stages[i].classList.remove('active');stages[i].classList.add('fail');
+      info.innerHTML=`<h4 style="color:#ef4444">❌ Test yiqildi!</h4><p>Test xato berdi, shuning uchun Build, Push va Deploy <b>ishlamaydi</b>. Buzuq kod serverga chiqmadi — pipeline sizni asradi! 🛡️</p><div class="term" style="color:#ff8a8a">FAILED (errors=1) — deploy bekor qilindi</div>`;
+      running=false;return;
+    }
+    stages[i].classList.remove('active');stages[i].classList.add('done');
+  }
+  info.innerHTML=`<h4 style="color:#22c55e">✅ Pipeline muvaffaqiyatli!</h4><p>Barcha bosqichlar o'tdi. Saytingiz avtomatik yangilandi — bironta ham qo'lda buyruq yozmadingiz. CI/CD sehri shu! 🎉</p><div class="term" style="color:#86efac">Deploy successful · 2m 14s</div>`;
+  running=false;
+}
+document.getElementById('run').onclick=()=>play(-1);
+document.getElementById('fail').onclick=()=>play(2);
+document.getElementById('reset').onclick=()=>{if(!running){clearAll();info.innerHTML='<h4>↺ Tozalandi</h4><p>Pipeline qaytadan tayyor. "▶️ Ishga tushir"ni bosing.</p>';}};
+
+/* ---------- deploy flow ---------- */
+const dn=[0,1,2].map(i=>document.getElementById('dn'+i));
+const da=[0,1].map(i=>document.getElementById('da'+i));
+let depBusy=false;
+document.getElementById('depRun').onclick=async()=>{
+  if(depBusy)return;depBusy=true;
+  dn.forEach(n=>n.classList.remove('lit','ok'));
+  da.forEach(a=>a.classList.remove('lit','run'));
+  dn[0].classList.add('lit'); await sleep(700);
+  da[0].classList.add('lit','run'); await sleep(1000);
+  dn[0].classList.remove('lit');dn[0].classList.add('ok');
+  dn[1].classList.add('lit'); await sleep(1100);
+  da[1].classList.add('lit','run'); await sleep(1000);
+  dn[1].classList.remove('lit');dn[1].classList.add('ok');
+  dn[2].classList.add('lit','ok'); await sleep(400);
+  depBusy=false;
+};
+
+/* ---------- secrets checklist ---------- */
+const secItems=[...document.querySelectorAll('.sec-item')];
+const secProg=document.getElementById('secProg');
+function updProg(){
+  const d=secItems.filter(s=>s.classList.contains('done')).length;
+  secProg.textContent=`${d} / ${secItems.length} belgilandi`;
+  if(d===secItems.length){secProg.textContent='✅ Hammasi tayyor — deploy mumkin!';secProg.style.color='#22c55e';}
+  else{secProg.style.color='';}
+}
+secItems.forEach(s=>s.addEventListener('click',()=>{s.classList.toggle('done');updProg();}));
+
+/* ---------- quiz ---------- */
+const Q=[
+  {q:"CI/CD ning asosiy maqsadi nima?",o:["Kodni chiroyli ko'rsatish","Test va deploy'ni avtomatlashtirish","Internetni tezlashtirish","Dizayn yasash"],a:1,
+   ok:"To'g'ri! CI/CD test va deploy jarayonini avtomatlashtiradi.",no:"Yo'q. Asosiy maqsad — test va deploy'ni avtomatlashtirish."},
+  {q:"Workflow fayli qaysi papkada turadi?",o:[".github/workflows/",".docker/","src/ci/","root papkada"],a:0,
+   ok:"Aniq! Doim .github/workflows/ ichida.",no:"Yo'q. To'g'ri javob: .github/workflows/"},
+  {q:"'needs: test' qatori nimani anglatadi?",o:["Test kerak emas","Faqat test o'tsa keyingi job ishlaydi","Testni o'chiradi","Test 2 marta ishlaydi"],a:1,
+   ok:"Barakalla! Build faqat test o'tgandan keyin ishlaydi.",no:"Yo'q. Bu — keyingi job faqat test o'tsa ishlaydi, degani."},
+  {q:"GitHub serverga deploy uchun qaysi usul bilan ulanadi?",o:["Email orqali","SSH orqali","Telefon qo'ng'irog'i","USB kabel"],a:1,
+   ok:"To'g'ri! SSH private key orqali xavfsiz ulanadi.",no:"Yo'q. GitHub serverga SSH orqali ulanadi."},
+];
+let qi=0,score=0;
+const qnum=document.getElementById('qnum'),qtext=document.getElementById('qtext'),
+  qopts=document.getElementById('qopts'),qfeed=document.getElementById('qfeed'),
+  qnext=document.getElementById('qnext'),qbar=document.getElementById('qbar');
+function renderQ(){
+  const c=Q[qi];
+  qnum.textContent=`Savol ${qi+1} / ${Q.length}`;
+  qtext.textContent=c.q; qfeed.textContent=''; qnext.style.display='none';
+  qbar.style.width=(qi/Q.length*100)+'%';
+  qopts.innerHTML='';
+  c.o.forEach((t,i)=>{
+    const b=document.createElement('button');b.className='opt';b.textContent=t;
+    b.onclick=()=>pick(i,b);qopts.appendChild(b);
+  });
+}
+function pick(i,btn){
+  const c=Q[qi];
+  [...qopts.children].forEach(b=>b.disabled=true);
+  if(i===c.a){btn.classList.add('correct');qfeed.style.color='#22c55e';qfeed.textContent='✅ '+c.ok;score++;}
+  else{btn.classList.add('wrong');qopts.children[c.a].classList.add('correct');
+    qfeed.style.color='#ef4444';qfeed.textContent='❌ '+c.no;}
+  qnext.style.display='inline-flex';
+  qnext.textContent=qi<Q.length-1?'Keyingi →':'Natijani ko\'rish 🏁';
+}
+qnext.onclick=()=>{
+  if(qi<Q.length-1){qi++;renderQ();}
+  else{
+    qbar.style.width='100%';
+    qopts.innerHTML='';qfeed.textContent='';qnext.style.display='none';
+    qnum.textContent='Yakun';
+    const pct=Math.round(score/Q.length*100);
+    let msg=pct===100?'🏆 Zo\'r! Hammasini to\'g\'ri yechdingiz!':pct>=60?'👍 Yaxshi natija! Yana takrorlang.':'📚 Darsni qayta o\'qib chiqing.';
+    qtext.innerHTML=`<div style="text-align:center"><div style="font-size:56px;font-weight:900" class="">${score}/${Q.length}</div><div style="color:var(--muted);margin:10px 0 20px">${msg}</div><button class="btn btn-s" onclick="restartQuiz()">↺ Qaytadan</button></div>`;
+  }
+};
+function restartQuiz(){qi=0;score=0;renderQ();}
+renderQ();
+</script>
+</body>
+</html>
