@@ -38,3 +38,35 @@ jobs:
           GOOGLE_CLIENT_ID: "test-client-id"
           GOOGLE_CLIENT_SECRET: "test-client-secret"
         run: python manage.py test   # oddiy terminal buyrug'i
+
+
+  # ==========================================================
+  #  2-JOB:  BUILD & PUSH  (CD qismi)
+  #  Faqat test o'tsa VA main'ga push bo'lsa ishlaydi
+  # ==========================================================
+  build-and-push:
+    name: 🚀 Build & Push (CD)
+    runs-on: ubuntu-latest
+    needs: test                                  # test'ga bog'liq
+    if: github.event_name == 'push'              # PR'da push qilmaydi
+
+    steps:
+      - name: 📥 Kodni checkout qilish
+        uses: actions/checkout@v4
+
+      # Docker Hub'ga login (sirlar Settings > Secrets'da saqlanadi)
+      - name: 🔐 Docker Hub'ga login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Image build qilib, Docker Hub'ga push qilish
+      - name: 🏗️ Build & Push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/u13_django:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/u13_django:${{ github.sha }}
