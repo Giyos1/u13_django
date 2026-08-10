@@ -70,3 +70,27 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/u13_django:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/u13_django:${{ github.sha }}
+
+  # ==========================================================
+  #  3-JOB:  DEPLOY  (serverga chiqarish — CD ning oxiri)
+  #  Faqat image push bo'lgandan keyin ishlaydi
+  # ==========================================================
+  deploy:
+    name: 🌐 Deploy (Serverga)
+    runs-on: ubuntu-latest
+    needs: build-and-push          # image tayyor bo'lsagina
+    if: github.event_name == 'push'
+
+    steps:
+      - name: 🔑 SSH orqali serverga ulanib, deploy qilish
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}      # server IP/domen
+          username: ${{ secrets.SERVER_USER }}  # ssh user (root/ubuntu)
+          key: ${{ secrets.SERVER_SSH_KEY }}    # ssh private key
+          port: 22
+          script: |
+            cd /home/ubuntu/u13_django_devops           # serverdagi loyiha papkasi
+            sudo docker compose pull                 # yangi image'ni tort
+            sudo docker compose up -d                # qayta ishga tushir
+            sudo docker image prune -f               # eski image'larni tozala
